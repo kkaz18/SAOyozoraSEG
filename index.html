@@ -1,989 +1,198 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>SAO夜空アリシゼーション セグ収集</title>
-<style>
-:root {
-  --bg: #0f1220;
-  --panel: #1b1f33;
-  --panel-2: #242a45;
-  --text: #f0f0f5;
-  --muted: #9aa0c0;
-  --accent: #4d6fff;
-  --red: #e0293e;
-  --red-dark: #a81c2c;
-  --border: #333a5c;
-  --radius: 14px;
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
-  background: linear-gradient(180deg, #0f1220 0%, #171b2e 100%);
-  color: var(--text);
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 20px 16px 60px;
-}
-
-header.app-header {
-  text-align: center;
-  padding: 18px 12px 10px;
-}
-
-header.app-header h1 {
-  font-size: 17px;
-  margin: 0 0 2px;
-  letter-spacing: 0.02em;
-}
-
-header.app-header .subtitle {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-nav.top-link {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-nav.top-link a, nav.top-link button.link-btn {
-  color: var(--muted);
-  font-size: 12px;
-  text-decoration: none;
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-nav.top-link a:hover, nav.top-link button.link-btn:hover { color: var(--text); border-color: var(--accent); }
-
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 16px;
-}
-
-.panel h2 {
-  font-size: 14px;
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.seg-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: repeat(4, 1fr);
-  gap: 3px;
-  max-width: 80px;
-  margin: 0 auto;
-}
-
-.seg-btn {
-  aspect-ratio: 1 / 1;
-  min-height: 16px;
-  border-radius: 3px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  font-size: 7px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.12s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.seg-btn:active { transform: scale(0.95); }
-
-.seg-btn.selected {
-  background: var(--red);
-  border-color: var(--red-dark);
-  color: #fff;
-  box-shadow: 0 0 0 1px rgba(224, 41, 62, 0.35);
-}
-
-.selection-summary {
-  text-align: center;
-  margin-top: 12px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.selection-summary .picked {
-  color: #fff;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.05em;
-}
-
-.btn-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-button { font-family: inherit; }
-
-.btn {
-  flex: 1;
-  padding: 12px 10px;
-  border-radius: 10px;
-  border: none;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-
-.btn:active { filter: brightness(0.9); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
-.btn-outline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-danger { background: var(--red); color: #fff; }
-
-select, input[type="text"], input[type="password"], input[type="file"], textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--text);
-  font-size: 14px;
-}
-
-textarea {
-  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
-  resize: vertical;
-  line-height: 1.6;
-}
-
-.result-box {
-  margin-top: 14px;
-  padding: 14px;
-  border-radius: 10px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  font-size: 14px;
-  min-height: 20px;
-  white-space: pre-wrap;
-  line-height: 1.6;
-}
-
-.result-box.empty { color: var(--muted); }
-.result-box .badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-right: 6px;
-}
-.badge.registered { background: rgba(77, 111, 255, 0.2); color: #9db2ff; }
-.badge.unregistered { background: rgba(224, 41, 62, 0.2); color: #ff8a94; }
-
-table.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-table.data-table th, table.data-table td {
-  padding: 8px 6px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-}
-
-table.data-table th { color: var(--muted); font-weight: 600; }
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 5px 6px 5px 12px;
-  font-size: 12px;
-}
-
-.tag button {
-  background: none;
-  border: none;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-  padding: 2px 6px;
-}
-.tag button:hover { color: var(--red); }
-
-.muted { color: var(--muted); font-size: 12px; }
-
-.gate {
-  max-width: 340px;
-  margin: 80px auto;
-  text-align: center;
-}
-
-.gate h1 { font-size: 16px; margin-bottom: 18px; }
-
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--panel-2);
-  border: 1px solid var(--accent);
-  color: var(--text);
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-size: 13px;
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-  z-index: 50;
-}
-.toast.show { opacity: 1; }
-
-.hidden { display: none !important; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <title>アリシゼーション セグ判定</title>
+  <style>
+    :root{
+      --bg:#0b1020;--card:#151d33;--line:#2b385b;--txt:#f6f8ff;--mut:#9eabc9;
+      --on:#e62f49;--blue:#5078ff;--normal:#d8deeb;--hero:#ffd55a;--rush:#ff536b;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:linear-gradient(180deg,#090d18,#121a2e);color:var(--txt);
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+      min-height:100vh
+    }
+    .app{max-width:480px;margin:auto;padding:24px 18px 90px}
+    h1{font-size:21px;text-align:center;margin:12px 0 5px}
+    .sub{text-align:center;color:var(--mut);font-size:12px;margin-bottom:25px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:16px}
+    .grid{display:grid;grid-template-columns:74px 74px;gap:8px;justify-content:center}
+    .seg{height:64px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;border:2px solid var(--line);border-radius:10px;background:#202a47;color:#dce4ff;font-size:21px;font-weight:800}
+    .seg.on{background:var(--on);border-color:#ff6478;color:#fff}
+    .picked{text-align:center;margin:18px 0 8px;color:var(--mut);font-size:13px}
+    .picked b{color:#fff;font-size:22px}
+    .result{margin-top:18px;text-align:center;border-radius:16px;padding:20px;background:#0d1427;border:1px solid var(--line)}
+    .result .state{font-size:30px;font-weight:900}
+    .normal{color:var(--normal)} .rush{color:var(--rush)} .hero{color:var(--hero)} .unknown{color:var(--mut)}
+    .clear{width:100%;margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--mut)}
+    .count{text-align:center;color:var(--mut);font-size:12px;margin-top:12px}
+    .foot{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(9,13,24,.94);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+    .gear{width:46px;height:46px;border:0;background:transparent;color:#8390af;font-size:25px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+    .modal.show{display:flex}
+    .box{width:min(430px,100%);max-height:88vh;overflow:auto;background:#151d33;border:1px solid var(--line);border-radius:20px;padding:20px}
+    input,textarea{width:100%;background:#0d1427;border:1px solid var(--line);border-radius:10px;color:#fff;padding:12px;font-size:16px;margin:6px 0}
+    .btn{width:100%;border:0;border-radius:12px;background:var(--blue);color:#fff;padding:13px;font-weight:800;margin-top:8px}
+    .close{background:#2a3554}
+    .small{font-size:12px;color:var(--mut);line-height:1.6}
+    .rows{font-size:13px;line-height:1.8;white-space:pre-wrap;background:#0d1427;border-radius:12px;padding:12px;margin-top:12px}
+  </style>
 </head>
 <body>
+  <div class="app">
+    <h1>アリシゼーション セグ判定</h1>
+    <div class="sub">①⑤ / ②⑥ / ③⑦ / ④⑧</div>
 
-<!-- ================= メイン画面 ================= -->
-<div class="container" id="mainView">
-  <header class="app-header">
-    <h1>SAO夜空アリシゼーション</h1>
-    <div class="subtitle">突入セグ収集アプリ</div>
-  </header>
-  <nav class="top-link">
-    <a href="#masterView">マスター管理画面(ページ下部)へ</a>
-  </nav>
-
-  <div class="panel">
-    <p class="muted" style="margin-top:0">
-      このアプリのデータは、この端末・このブラウザだけに保存されます。友人と件数を共有したい場合は、マスター管理画面の「バックアップ」機能でファイルをやり取りしてください。
-    </p>
-  </div>
-
-  <div class="panel">
-    <h2>突入セグを選択(複数選択可)</h2>
-    <div id="segGridMain"></div>
-    <div class="selection-summary">
-      選択中セグ: <span class="picked" id="pickedLabelMain">なし</span>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" id="clearBtnMain">選択解除</button>
-      <button class="btn btn-primary" id="inquireBtn">照会</button>
-    </div>
-    <div class="result-box empty" id="inquiryResult">セグを選択して「照会」を押してください。</div>
-  </div>
+    <div class="card">
+      <div class="grid" id="grid">
+<button type="button" class="seg" data-n="1">①</button><button type="button" class="seg" data-n="5">⑤</button>
+<button type="button" class="seg" data-n="2">②</button><button type="button" class="seg" data-n="6">⑥</button>
+<button type="button" class="seg" data-n="3">③</button><button type="button" class="seg" data-n="7">⑦</button>
+<button type="button" class="seg" data-n="4">④</button><button type="button" class="seg" data-n="8">⑧</button>
 </div>
-
-<!-- ================= マスター管理画面(ページ最下部) ================= -->
-<div class="container" id="masterView">
-  <div class="gate" id="gate">
-    <h1>マスター管理画面</h1>
-    <div class="panel">
-      <p class="muted" style="margin-top:0">パスワードを入力してください</p>
-      <input type="password" id="pwInput" placeholder="パスワード" />
-      <div class="btn-row">
-        <button class="btn btn-primary" id="pwSubmit" style="width:100%">入室</button>
+      <div class="picked">選択中 <b id="picked">なし</b></div>
+      <div class="result">
+        <div class="small">判定結果</div>
+        <div class="state unknown" id="state">未選択</div>
       </div>
-      <div class="result-box empty hidden" id="pwError"></div>
-      <p class="muted" style="margin-top:14px">
-        ※このパスワードはブラウザ内だけでチェックしています。ページのソースを見れば誰でも分かってしまうため、本格的な秘密の保護には使えません。あくまで誤操作防止のための簡易ロックです。
-      </p>
-    </div>
-    <nav class="top-link"><a href="#mainView">ページ上部へ戻る</a></nav>
-  </div>
-
-  <div id="adminArea" class="hidden">
-    <header class="app-header">
-      <h1>マスター管理画面</h1>
-      <div class="subtitle">SAO夜空アリシゼーション 突入セグ</div>
-    </header>
-    <nav class="top-link">
-      <a href="#mainView">ページ上部へ</a>
-      &nbsp;
-      <button type="button" class="link-btn" id="logoutBtn">退室</button>
-    </nav>
-
-    <div class="panel">
-      <h2>セグをマスター登録</h2>
-      <div id="segGridMaster"></div>
-      <div class="selection-summary">
-        選択中セグ: <span class="picked" id="pickedLabelMaster">なし</span>
-      </div>
-      <select id="stateSelectMaster" style="margin-top:14px"></select>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="clearBtnMaster">選択解除</button>
-        <button class="btn btn-primary" id="registerBtn">マスター登録</button>
-      </div>
-      <div class="result-box empty" id="registerResult">セグと状態を選んで登録してください。</div>
-    </div>
-
-    <div class="panel">
-      <h2>セグを一括登録</h2>
-      <p class="muted" style="margin-top:0">
-        1行ごとに「セグの数字を並べたもの」と「状態名」を半角スペースで区切って入力してください。セグの数字は①なら1、⑤なら5のように対応します(複数選択は数字を続けて書きます)。
-      </p>
-      <p class="muted">例:<br>1234 通常<br>1245 通常</p>
-      <textarea id="bulkInput" rows="6" placeholder="1234 通常&#10;1245 通常"></textarea>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="bulkRegisterBtn">一括登録する</button>
-      </div>
-      <div class="result-box empty" id="bulkResult">まだ操作していません。</div>
-    </div>
-
-    <div class="panel">
-      <h2>状態の選択肢を管理</h2>
-      <div class="tag-list" id="stateTags"></div>
-      <div class="btn-row" style="margin-top:12px">
-        <input type="text" id="newStateInput" placeholder="新しい状態名を追加" />
-        <button class="btn btn-primary" id="addStateBtn" style="flex:0 0 auto">追加</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>マスター登録済み一覧</h2>
-      <table class="data-table" id="masterTable">
-        <thead><tr><th>セグ</th><th>状態</th><th>登録日</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <p class="muted" id="masterEmpty">まだ登録がありません。</p>
-    </div>
-
-    <div class="panel">
-      <h2>公開用ファイルを書き出す</h2>
-      <p class="muted" style="margin-top:0">
-        今この画面で登録・編集した内容を「標準の内容」として書き込んだ index.html を作成します。これをGitHubにアップロードし直すと、他の端末で(初めて/新しいバージョンとして)開いたときに、自動でこの内容が反映されます。
-      </p>
-      <p class="muted">
-        ※GitHub Pagesなど、サーバー上でこのページを開いている場合だけ使えます。パソコンに保存したファイルを直接開いている状態では動作しないことがあります。
-      </p>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="publishBtn">公開用のindex.htmlを書き出す</button>
-      </div>
-      <div class="result-box empty" id="publishResult">まだ操作していません。</div>
-    </div>
-
-    <div class="panel">
-      <h2>友人とデータを共有する(バックアップ)</h2>
-      <p class="muted" style="margin-top:0">
-        データはこの端末にしか保存されないため、友人とマスター登録内容を共有したい場合は、バックアップをダウンロードしてもらい、そのファイルをこの画面で読み込んでください。
-      </p>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="exportBtn">バックアップをダウンロード</button>
-      </div>
-      <p class="muted" style="margin-top:14px">バックアップファイルを選んで読み込む(合算)</p>
-      <input type="file" id="importFile" accept="application/json" />
-      <div class="btn-row">
-        <button class="btn btn-primary" id="importBtn">読み込む</button>
-      </div>
-      <div class="result-box empty" id="backupResult">まだ操作していません。</div>
+      <button class="clear" id="clear">選択解除</button>
+      <div class="count" id="count"></div>
     </div>
   </div>
-</div>
 
-<script>
-// ============================================================
-// セグ選択グリッドの共通ロジック
-// レイアウト: ①⑤ / ②⑥ / ③⑦ / ④⑧ (左列1-4, 右列5-8)
-// ============================================================
-const SEG_CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
+  <div class="foot">
+    <button class="gear" id="gear" aria-label="管理">⚙︎</button>
+  </div>
 
-function circled(n) {
-  return SEG_CIRCLED[n - 1] || String(n);
-}
+  <div class="modal" id="login">
+    <div class="box">
+      <h2>マスター管理</h2>
+      <input id="pw" type="password" placeholder="パスワード">
+      <button class="btn" id="loginBtn">開く</button>
+      <button class="btn close" data-close>閉じる</button>
+    </div>
+  </div>
 
-function comboToLabel(comboStr) {
-  if (!comboStr) return '';
-  return comboStr
-    .split(',')
-    .map((s) => parseInt(s, 10))
-    .sort((a, b) => a - b)
-    .map(circled)
-    .join('');
-}
+  <div class="modal" id="admin">
+    <div class="box">
+      <h2>マスター管理</h2>
+      <p class="small">1行に「1234 通常」の形式で入力してください。同じ番号は上書き修正されます。</p>
+      <textarea id="bulk" rows="8" placeholder="1234 通常&#10;1256 RUSH"></textarea>
+      <button class="btn" id="save">一括登録・修正</button>
+      <div class="rows" id="rows"></div>
+      <button class="btn close" data-close>閉じる</button>
+    </div>
+  </div>
 
-function createSegGrid(container, onChange) {
-  container.innerHTML = '';
-  container.classList.add('seg-grid');
-  const selected = new Set();
-  const buttons = {};
-
-  const order = [1, 5, 2, 6, 3, 7, 4, 8];
-  order.forEach((n) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'seg-btn';
-    btn.textContent = circled(n);
-    btn.dataset.num = String(n);
-    btn.addEventListener('click', () => {
-      if (selected.has(n)) {
-        selected.delete(n);
-        btn.classList.remove('selected');
-      } else {
-        selected.add(n);
-        btn.classList.add('selected');
-      }
-      if (onChange) onChange(getSortedSelected());
-    });
-    buttons[n] = btn;
-    container.appendChild(btn);
-  });
-
-  function getSortedSelected() {
-    return [...selected].sort((a, b) => a - b);
-  }
-
-  function clear() {
-    selected.clear();
-    Object.values(buttons).forEach((b) => b.classList.remove('selected'));
-    if (onChange) onChange([]);
-  }
-
-  return { getSelected: getSortedSelected, clear };
-}
-
-function showToast(message) {
-  let toast = document.getElementById('__toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = '__toast';
-    toast.className = 'toast';
-    document.body.appendChild(toast);
-  }
-  toast.textContent = message;
-  toast.classList.add('show');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toast.classList.remove('show'), 2200);
-}
-
-// ============================================================
-// データ保存ロジック(このブラウザのlocalStorageに保存)
-// ============================================================
-const MASTER_PASSWORD = 'yozoraSAO';
-
-const STORAGE_KEYS = {
-  states: 'saoSeg_states_v1',
-  master: 'saoSeg_master_v1',
-  dataVersion: 'saoSeg_dataVersion_v1',
-};
-
-// ===DEFAULT_DATA_START===
-// ここから下のデフォルトデータは、マスター管理画面の
-// 「公開用ファイルを書き出す」機能によって自動更新されます。
-// 手で書き換える必要はありません。
-const DEFAULT_DATA_VERSION = "2026-08-18T00:00:00.000Z";
-const DEFAULT_STATES_DATA = [{"id":1,"name":"大当り確定","sort_order":0},{"id":2,"name":"高確濃厚","sort_order":1},{"id":3,"name":"チャンス","sort_order":2},{"id":4,"name":"通常","sort_order":3},{"id":5,"name":"ガセ","sort_order":4}];
-const DEFAULT_MASTER_DATA = [];
-// ===DEFAULT_DATA_END===
-
-function loadJSON(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch (e) {
-    return fallback;
-  }
-}
-
-function saveJSON(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function nextId(list) {
-  return list.reduce((m, x) => Math.max(m, x.id || 0), 0) + 1;
-}
-
-function ensureInit() {
-  // このファイルに書き込まれている公開データのバージョンと、
-  // この端末に保存済みのバージョンが違う場合は、
-  // 「管理者が最新の状態に更新した」とみなして自動的に同期します。
-  const storedVersion = localStorage.getItem(STORAGE_KEYS.dataVersion);
-  if (storedVersion !== DEFAULT_DATA_VERSION) {
-    saveJSON(STORAGE_KEYS.states, DEFAULT_STATES_DATA);
-    saveJSON(STORAGE_KEYS.master, DEFAULT_MASTER_DATA);
-    localStorage.setItem(STORAGE_KEYS.dataVersion, DEFAULT_DATA_VERSION);
-  }
-}
-ensureInit();
-
-function normalizeCombo(comboStr) {
-  if (!comboStr || typeof comboStr !== 'string') return null;
-  const nums = comboStr
-    .split(',')
-    .map((s) => parseInt(s.trim(), 10))
-    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 8);
-  if (nums.length === 0) return null;
-  return [...new Set(nums)].sort((a, b) => a - b).join(',');
-}
-
-const Store = {
-  getStates() {
-    return loadJSON(STORAGE_KEYS.states, []).sort((a, b) => a.sort_order - b.sort_order);
-  },
-  addState(name) {
-    const states = this.getStates();
-    if (states.some((s) => s.name === name)) {
-      return { error: '既に存在する状態名です' };
-    }
-    const maxOrder = states.reduce((m, s) => Math.max(m, s.sort_order), 0);
-    states.push({ id: nextId(states), name, sort_order: maxOrder + 1 });
-    saveJSON(STORAGE_KEYS.states, states);
-    return { states };
-  },
-  deleteState(id) {
-    const states = this.getStates().filter((s) => s.id !== Number(id));
-    saveJSON(STORAGE_KEYS.states, states);
-    return states;
-  },
-
-  getAllMaster() {
-    return loadJSON(STORAGE_KEYS.master, []);
-  },
-  getMasterForCombo(combo) {
-    return this.getAllMaster()
-      .filter((m) => m.combo === combo)
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  },
-  registerMaster(combo, state) {
-    const master = this.getAllMaster();
-    if (!master.some((m) => m.combo === combo && m.state === state)) {
-      master.push({ id: nextId(master), combo, state, created_at: new Date().toISOString() });
-      saveJSON(STORAGE_KEYS.master, master);
-    }
-    return this.getMasterForCombo(combo);
-  },
-  deleteMaster(id) {
-    const master = this.getAllMaster().filter((m) => m.id !== Number(id));
-    saveJSON(STORAGE_KEYS.master, master);
-  },
-
-  exportAll() {
-    return {
-      exportedAt: new Date().toISOString(),
-      states: this.getStates(),
-      master: this.getAllMaster(),
+  <script>
+    const INITIAL = {
+      "2":"RUSH","7":"通常","12":"通常","15":"僕の英雄","26":"通常","48":"通常",
+      "148":"RUSH","178":"RUSH","234":"僕の英雄","268":"通常","278":"RUSH","347":"RUSH",
+      "378":"RUSH","458":"通常","478":"通常","1234":"RUSH","1346":"通常","1347":"通常",
+      "1568":"RUSH","1678":"通常","2345":"通常","2578":"RUSH","3457":"RUSH","3567":"RUSH",
+      "12345":"RUSH","12347":"通常","12356":"RUSH","12578":"通常","13567":"通常",
+      "23468":"RUSH","123468":"通常"
     };
-  },
-  importAll(data) {
-    const states = this.getStates();
-    (data.states || []).forEach((s) => {
-      if (s.name && !states.some((x) => x.name === s.name)) {
-        states.push({ id: nextId(states), name: s.name, sort_order: s.sort_order || 0 });
-      }
-    });
-    saveJSON(STORAGE_KEYS.states, states);
 
-    const master = this.getAllMaster();
-    (data.master || []).forEach((m) => {
-      const combo = normalizeCombo(m.combo);
-      if (combo && m.state && !master.some((x) => x.combo === combo && x.state === m.state)) {
-        master.push({
-          id: nextId(master),
-          combo,
-          state: m.state,
-          created_at: m.created_at || new Date().toISOString(),
-        });
-      }
-    });
-    saveJSON(STORAGE_KEYS.master, master);
+    // 31 unique entries above + one duplicate in source data = 32 listed records.
+    // To preserve the user's requested "32 initial" set without duplicate ambiguity,
+    // unique combinations are stored once.
 
-    return {
-      states: (data.states || []).length,
-      master: (data.master || []).length,
+    function norm(s){
+      return [...new Set(String(s).replace(/[^1-8]/g,''))].sort().join('');
+    }
+
+    const local = JSON.parse(localStorage.getItem('segMaster') || '{}');
+    let master = {...INITIAL, ...local};
+
+    const selected = new Set();
+    document.querySelectorAll('.seg[data-n]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const n=Number(b.dataset.n);
+        if(selected.has(n)){selected.delete(n);b.classList.remove('on');}
+        else{selected.add(n);b.classList.add('on');}
+        render();
+      });
+    });
+
+    function render(){
+      const k = [...selected].sort().join('');
+      document.querySelector('#picked').textContent = k || 'なし';
+      const s = k ? master[k] : null;
+      const el = document.querySelector('#state');
+      el.textContent = k ? (s || '未登録') : '未選択';
+      el.className = 'state ' + (
+        s==='RUSH' ? 'rush' :
+        s==='僕の英雄' ? 'hero' :
+        s==='通常' ? 'normal' : 'unknown'
+      );
+      document.querySelector('#count').textContent = `マスター ${Object.keys(master).length}種類`;
+    }
+
+    document.querySelector('#clear').onclick = ()=>{
+      selected.clear();
+      document.querySelectorAll('.seg').forEach(x=>x.classList.remove('on'));
+      render();
     };
-  },
-};
 
-// ============================================================
-// メイン画面のロジック
-// ============================================================
-const pickedLabelMain = document.getElementById('pickedLabelMain');
-const inquiryResult = document.getElementById('inquiryResult');
-const inquireBtn = document.getElementById('inquireBtn');
-const clearBtnMain = document.getElementById('clearBtnMain');
+    let timer;
+    const gear = document.querySelector('#gear');
+    const start = ()=>{ timer = setTimeout(()=>document.querySelector('#login').classList.add('show'),3000); };
+    const stop = ()=>clearTimeout(timer);
+    gear.addEventListener('touchstart', start, {passive:true});
+    gear.addEventListener('touchend', stop);
+    gear.addEventListener('mousedown', start);
+    gear.addEventListener('mouseup', stop);
+    gear.addEventListener('mouseleave', stop);
 
-let mainSelected = [];
+    document.querySelector('#loginBtn').onclick = ()=>{
+      if(document.querySelector('#pw').value === 'yozoraSAO'){
+        document.querySelector('#login').classList.remove('show');
+        document.querySelector('#admin').classList.add('show');
+        showRows();
+      }else{
+        alert('パスワードが違います');
+      }
+    };
 
-const gridMain = createSegGrid(document.getElementById('segGridMain'), (selected) => {
-  mainSelected = selected;
-  pickedLabelMain.textContent = selected.length ? selected.map(circled).join('') : 'なし';
-  inquiryResult.textContent = 'セグを選択して「照会」を押してください。';
-  inquiryResult.classList.add('empty');
-});
-
-clearBtnMain.addEventListener('click', () => gridMain.clear());
-
-inquireBtn.addEventListener('click', () => {
-  if (mainSelected.length === 0) {
-    showToast('セグを選択してください');
-    return;
-  }
-  const combo = mainSelected.join(',');
-  const masterRows = Store.getMasterForCombo(combo);
-  const label = mainSelected.map(circled).join('');
-
-  let html = '';
-  if (masterRows.length === 0) {
-    html += `<span class="badge unregistered">未登録</span> セグ ${escapeHtml(label)} はマスターに登録されていません。`;
-  } else {
-    html += `<span class="badge registered">登録済み</span> セグ ${escapeHtml(label)} のマスター登録状態:\n`;
-    html += masterRows.map((r) => `・${escapeHtml(r.state)}`).join('\n');
-  }
-
-  inquiryResult.classList.remove('empty');
-  inquiryResult.innerHTML = html;
-});
-
-// ============================================================
-// マスター管理画面のロジック
-// ============================================================
-const gate = document.getElementById('gate');
-const adminArea = document.getElementById('adminArea');
-const pwInput = document.getElementById('pwInput');
-const pwSubmit = document.getElementById('pwSubmit');
-const pwError = document.getElementById('pwError');
-const logoutBtn = document.getElementById('logoutBtn');
-
-const pickedLabelMaster = document.getElementById('pickedLabelMaster');
-const stateSelectMaster = document.getElementById('stateSelectMaster');
-const registerBtn = document.getElementById('registerBtn');
-const clearBtnMaster = document.getElementById('clearBtnMaster');
-const registerResult = document.getElementById('registerResult');
-const bulkInput = document.getElementById('bulkInput');
-const bulkRegisterBtn = document.getElementById('bulkRegisterBtn');
-const bulkResult = document.getElementById('bulkResult');
-const stateTags = document.getElementById('stateTags');
-const newStateInput = document.getElementById('newStateInput');
-const addStateBtn = document.getElementById('addStateBtn');
-const masterTableBody = document.querySelector('#masterTable tbody');
-const masterEmpty = document.getElementById('masterEmpty');
-const publishBtn = document.getElementById('publishBtn');
-const publishResult = document.getElementById('publishResult');
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
-const importFile = document.getElementById('importFile');
-const backupResult = document.getElementById('backupResult');
-
-let masterSelected = [];
-let gridMaster;
-
-function enterAdmin() {
-  gate.classList.add('hidden');
-  adminArea.classList.remove('hidden');
-  if (!gridMaster) {
-    gridMaster = createSegGrid(document.getElementById('segGridMaster'), (selected) => {
-      masterSelected = selected;
-      pickedLabelMaster.textContent = selected.length ? selected.map(circled).join('') : 'なし';
+    document.querySelectorAll('[data-close]').forEach(b=>{
+      b.onclick = ()=>b.closest('.modal').classList.remove('show');
     });
-    clearBtnMaster.addEventListener('click', () => gridMaster.clear());
-  }
-  loadStatesMaster();
-  loadMaster();
-}
 
-pwSubmit.addEventListener('click', () => {
-  const pw = pwInput.value;
-  if (pw === MASTER_PASSWORD) {
-    sessionStorage.setItem('masterUnlocked', '1');
-    pwError.classList.add('hidden');
-    enterAdmin();
-  } else {
-    pwError.textContent = 'パスワードが違います。';
-    pwError.classList.remove('hidden');
-  }
-});
-
-pwInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') pwSubmit.click();
-});
-
-logoutBtn.addEventListener('click', () => {
-  sessionStorage.removeItem('masterUnlocked');
-  adminArea.classList.add('hidden');
-  gate.classList.remove('hidden');
-  pwInput.value = '';
-});
-
-function loadStatesMaster() {
-  const states = Store.getStates();
-
-  stateSelectMaster.innerHTML = '';
-  states.forEach((s) => {
-    const opt = document.createElement('option');
-    opt.value = s.name;
-    opt.textContent = s.name;
-    stateSelectMaster.appendChild(opt);
-  });
-
-  stateTags.innerHTML = '';
-  if (states.length === 0) {
-    const p = document.createElement('p');
-    p.className = 'muted';
-    p.textContent = '状態が登録されていません。下から追加してください。';
-    stateTags.appendChild(p);
-  }
-  states.forEach((s) => {
-    const tag = document.createElement('span');
-    tag.className = 'tag';
-    tag.innerHTML = `<span>${escapeHtml(s.name)}</span>`;
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '×';
-    delBtn.title = '削除';
-    delBtn.addEventListener('click', () => {
-      if (!confirm(`「${s.name}」を削除しますか？`)) return;
-      Store.deleteState(s.id);
-      loadStatesMaster();
-    });
-    tag.appendChild(delBtn);
-    stateTags.appendChild(tag);
-  });
-}
-
-addStateBtn.addEventListener('click', () => {
-  const name = newStateInput.value.trim();
-  if (!name) return;
-  const result = Store.addState(name);
-  if (result.error) {
-    showToast(result.error);
-    return;
-  }
-  newStateInput.value = '';
-  loadStatesMaster();
-  showToast('状態を追加しました');
-});
-
-registerBtn.addEventListener('click', () => {
-  if (masterSelected.length === 0) {
-    showToast('セグを選択してください');
-    return;
-  }
-  if (!stateSelectMaster.value) {
-    showToast('状態を選択してください');
-    return;
-  }
-  Store.registerMaster(masterSelected.join(','), stateSelectMaster.value);
-  const label = masterSelected.map(circled).join('');
-  registerResult.classList.remove('empty');
-  registerResult.textContent = `セグ ${label} を「${stateSelectMaster.value}」として登録しました。`;
-  showToast('マスターに登録しました');
-  loadMaster();
-});
-
-bulkRegisterBtn.addEventListener('click', () => {
-  const lines = bulkInput.value
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
-
-  if (lines.length === 0) {
-    showToast('登録したい内容を入力してください');
-    return;
-  }
-
-  let successCount = 0;
-  let newStateCount = 0;
-  const errors = [];
-
-  lines.forEach((line, idx) => {
-    const m = line.match(/^([1-8]+)[\s　]+(.+)$/);
-    if (!m) {
-      errors.push(`${idx + 1}行目「${line}」: 形式が正しくありません(例: 1234 通常)`);
-      return;
-    }
-    const digits = m[1];
-    const stateName = m[2].trim();
-    if (!stateName) {
-      errors.push(`${idx + 1}行目「${line}」: 状態名がありません`);
-      return;
-    }
-    const combo = normalizeCombo(digits.split('').join(','));
-    if (!combo) {
-      errors.push(`${idx + 1}行目「${line}」: セグの数字を読み取れませんでした`);
-      return;
+    function parseBulk(text){
+      const out = {};
+      text.split(/\r?\n/).forEach(line=>{
+        const t = line.trim();
+        if(!t) return;
+        const m = t.match(/^([1-8]+)\s+(通常|僕の英雄|RUSH)$/);
+        if(m) out[norm(m[1])] = m[2];
+      });
+      return out;
     }
 
-    if (!Store.getStates().some((s) => s.name === stateName)) {
-      Store.addState(stateName);
-      newStateCount++;
-    }
-    Store.registerMaster(combo, stateName);
-    successCount++;
-  });
+    document.querySelector('#save').onclick = ()=>{
+      const add = parseBulk(document.querySelector('#bulk').value);
+      master = {...master, ...add};
+      localStorage.setItem('segMaster', JSON.stringify(master));
+      document.querySelector('#bulk').value = '';
+      showRows();
+      render();
+      alert(`${Object.keys(add).length}件を登録・修正しました`);
+    };
 
-  loadStatesMaster();
-  loadMaster();
-
-  let resultText = `${successCount}件を登録しました。`;
-  if (newStateCount > 0) resultText += `(新しい状態を${newStateCount}件追加しました)`;
-  if (errors.length > 0) {
-    resultText += `\n\n【スキップされた行】\n` + errors.join('\n');
-  }
-  bulkResult.classList.remove('empty');
-  bulkResult.textContent = resultText;
-  if (successCount > 0 && errors.length === 0) {
-    bulkInput.value = '';
-  }
-  if (successCount > 0) showToast('一括登録しました');
-});
-
-function loadMaster() {
-  const rows = Store.getAllMaster().sort((a, b) => a.combo.localeCompare(b.combo));
-  masterTableBody.innerHTML = '';
-  masterEmpty.classList.toggle('hidden', rows.length > 0);
-  rows.forEach((r) => {
-    const tr = document.createElement('tr');
-    const date = r.created_at ? r.created_at.replace('T', ' ').slice(0, 16) : '';
-    tr.innerHTML = `
-      <td>${escapeHtml(comboToLabel(r.combo))}</td>
-      <td>${escapeHtml(r.state)}</td>
-      <td class="muted">${escapeHtml(date)}</td>
-      <td></td>
-    `;
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn btn-outline';
-    delBtn.style.padding = '4px 10px';
-    delBtn.style.fontSize = '12px';
-    delBtn.textContent = '削除';
-    delBtn.addEventListener('click', () => {
-      if (!confirm('このマスター登録を削除しますか？')) return;
-      Store.deleteMaster(r.id);
-      loadMaster();
-    });
-    tr.lastElementChild.appendChild(delBtn);
-    masterTableBody.appendChild(tr);
-  });
-}
-
-publishBtn.addEventListener('click', async () => {
-  publishBtn.disabled = true;
-  try {
-    const res = await fetch(location.href, { cache: 'no-store' });
-    if (!res.ok) throw new Error('現在のページを取得できませんでした');
-    let html = await res.text();
-
-    const marker = /\/\/ ===DEFAULT_DATA_START===[\s\S]*?\/\/ ===DEFAULT_DATA_END===/;
-    if (!marker.test(html)) {
-      throw new Error('テンプレートの目印が見つかりませんでした。このファイルは古い形式かもしれません。');
+    function showRows(){
+      document.querySelector('#rows').textContent =
+        Object.keys(master)
+          .sort((a,b)=>a.length-b.length || a.localeCompare(b))
+          .map(k=>`${k} ${master[k]}`)
+          .join('\n');
     }
 
-    const newVersion = new Date().toISOString();
-    const newBlock =
-      '// ===DEFAULT_DATA_START===\n' +
-      '// ここから下のデフォルトデータは、マスター管理画面の\n' +
-      '// 「公開用ファイルを書き出す」機能によって自動更新されます。\n' +
-      '// 手で書き換える必要はありません。\n' +
-      `const DEFAULT_DATA_VERSION = ${JSON.stringify(newVersion)};\n` +
-      `const DEFAULT_STATES_DATA = ${JSON.stringify(Store.getStates())};\n` +
-      `const DEFAULT_MASTER_DATA = ${JSON.stringify(Store.getAllMaster())};\n` +
-      '// ===DEFAULT_DATA_END===';
-
-    html = html.replace(marker, newBlock);
-
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'index.html';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    publishResult.classList.remove('empty');
-    publishResult.textContent =
-      '書き出しました。ダウンロードされた index.html をGitHubにアップロードし直してください。';
-    showToast('書き出しました');
-  } catch (e) {
-    publishResult.classList.remove('empty');
-    publishResult.textContent = e.message || '書き出しに失敗しました。';
-  } finally {
-    publishBtn.disabled = false;
-  }
-});
-
-exportBtn.addEventListener('click', () => {
-  const data = Store.exportAll();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const dateStr = new Date().toISOString().slice(0, 10);
-  a.href = url;
-  a.download = `pachinko-seg-backup-${dateStr}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  backupResult.classList.remove('empty');
-  backupResult.textContent = 'バックアップをダウンロードしました。';
-});
-
-importBtn.addEventListener('click', async () => {
-  const file = importFile.files && importFile.files[0];
-  if (!file) {
-    showToast('バックアップファイルを選択してください');
-    return;
-  }
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    const result = Store.importAll(data);
-    backupResult.classList.remove('empty');
-    backupResult.textContent = `読み込みが完了しました。(状態:${result.states}件 / マスター:${result.master}件を合算しました)`;
-    loadStatesMaster();
-    loadMaster();
-    showToast('読み込みました');
-  } catch (e) {
-    backupResult.classList.remove('empty');
-    backupResult.textContent = 'ファイルの読み込みに失敗しました。正しいバックアップファイルか確認してください。';
-  }
-});
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  }[c]));
-}
-
-// 初期化
-if (sessionStorage.getItem('masterUnlocked') === '1') {
-  enterAdmin();
-}
-</script>
+    render();
+  </script>
 </body>
 </html>
