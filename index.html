@@ -55,6 +55,7 @@
 <button type="button" class="seg" data-n="4">④</button><button type="button" class="seg" data-n="8">⑧</button>
 </div>
       <div class="picked">選択中 <b id="picked">なし</b></div>
+      <button class="btn" id="judgeBtn">判定</button>
       <div class="result">
         <div class="small">判定結果</div>
         <div class="state unknown" id="state">未選択</div>
@@ -113,7 +114,7 @@
       "268":"通常",
       "278":"RUSH",
       "346":"RUSH",
-      "347":"通常",
+      "347":"RUSH",
       "348":"通常",
       "367":"僕の英雄",
       "378":"RUSH",
@@ -170,7 +171,7 @@
       "1234568":"通常"
     };
 
-    const SECONDARY = {"126":["失敗"],"13467":["失敗"],"468":["咲け花たち"],"257":["咲け花たち"],"156":["咲け花たち"],"13456":["咲け花たち"],"34567":["失敗"],"24578":["失敗"],"167":["失敗"],"238":["失敗"],"4568":["失敗"],"1238":["失敗"],"14568":["失敗","咲け花たち"],"125678":["失敗"],"15678":["失敗"],"123468":["成功"],"12358":["成功"],"23":["失敗"],"26":["成功"],"68":["失敗"],"158":["失敗"],"235":["失敗"],"256":["失敗"],"356":["咲け花たち"],"347":["失敗"],"1248":["失敗"],"12346":["成功"],"12458":["失敗"],"12678":["失敗"],"13678":["咲け花たち"],"13468":["失敗"],"23578":["失敗"],"24":["失敗"],"67":["失敗"],"145":["失敗"],"378":["失敗"],"2568":["失敗"],"2356":["失敗"],"24568":["失敗"],"23456":["失敗"],"45":["成功"],"14":["咲け花たち"],"27":["咲け花たち"],"2458":["咲け花たち"],"358":["咲け花たち"],"368":["咲け花たち"],"4":["咲け花たち"],"56":["咲け花たち"],"2468":["成功"],"25678":["成功"],"12478":["失敗"]};
+    const SECONDARY = {"126":["失敗"],"13467":["失敗"],"468":["咲け花たち"],"257":["咲け花たち"],"156":["咲け花たち"],"13456":["咲け花たち"],"34567":["失敗"],"24578":["失敗"],"167":["失敗"],"238":["失敗"],"4568":["失敗"],"1238":["失敗"],"14568":["失敗","咲け花たち"],"125678":["失敗"],"15678":["失敗"],"123468":["成功"],"12358":["成功"],"23":["失敗"],"26":["成功"],"68":["失敗"],"158":["失敗"],"235":["失敗"],"256":["失敗"],"356":["咲け花たち"],"347":["失敗"],"1248":["失敗"],"12346":["成功"],"12458":["失敗"],"12678":["失敗"],"13678":["咲け花たち"],"13468":["失敗"],"23578":["失敗"],"24":["失敗"],"67":["失敗"],"145":["失敗"],"378":["失敗"],"2568":["失敗"],"2356":["失敗"],"24568":["失敗"],"23456":["失敗"],"45":["成功"],"14":["咲け花たち"],"27":["咲け花たち"],"2458":["咲け花たち"],"358":["咲け花たち"],"368":["咲け花たち"],"4":["咲け花たち"],"56":["咲け花たち"],"2468":["成功"],"25678":["成功"],"12478":["失敗"],"2678":["咲け花たち"]};
 
     // 31 unique entries above + one duplicate in source data = 32 listed records.
     // To preserve the user's requested "32 initial" set without duplicate ambiguity,
@@ -194,31 +195,55 @@
     });
 
     function render(){
-      const k = [...selected].sort().join('');
-      document.querySelector('#picked').textContent = k || 'なし';
-      const s = k ? master[k] : null;
-      const el = document.querySelector('#state');
-      el.textContent = k ? (s || '未登録') : '未選択';
-      el.className = 'state ' + (
-        s==='RUSH' ? 'rush' :
-        s==='僕の英雄' ? 'hero' :
-        s==='通常' ? 'normal' : 'unknown'
-      );
-      const s2=k?SECONDARY[k]:null;
+      const k=[...selected].sort().join('');
+      document.querySelector('#picked').textContent=k||'なし';
+      document.querySelector('#count').textContent=
+        `基本マスター ${Object.keys(master).length}種類 / 下位RUSH中 ${Object.keys(SECONDARY).length}セグ`;
+    }
+
+    function judge(){
+      const k=[...selected].sort().join('');
+      const el=document.querySelector('#state');
       const el2=document.querySelector('#state2');
-      el2.textContent=k?(s2&&s2.length?s2.join(' / '):'未登録'):'未選択';
+
+      if(!k){
+        el.textContent='未選択';
+        el.className='state unknown';
+        el2.textContent='未選択';
+        el2.className='state unknown';
+        return;
+      }
+
+      const s=master[k];
+      el.textContent=s||'未登録';
+      el.className='state '+(
+        s==='RUSH'?'rush':
+        s==='僕の英雄'?'hero':
+        s==='通常'?'normal':'unknown'
+      );
+
+      const s2=SECONDARY[k];
+      el2.textContent=s2&&s2.length?s2.join(' / '):'未登録';
       el2.className='state '+(
         s2&&s2.length
           ? (s2.includes('失敗') && s2.length===1 ? 'failure' : 'hero')
           : 'unknown'
       );
-      document.querySelector('#count').textContent=`基本マスター ${Object.keys(master).length}種類 / 追加判定 ${Object.keys(SECONDARY).length}セグ`;
     }
+
+    document.querySelector('#judgeBtn').onclick=judge;
 
     document.querySelector('#clear').onclick = ()=>{
       selected.clear();
       document.querySelectorAll('.seg').forEach(x=>x.classList.remove('on'));
       render();
+
+      const el=document.querySelector('#state');
+      const el2=document.querySelector('#state2');
+      el.textContent='未選択';
+      el.className='state unknown';
+      el2.textContent='未選択';
+      el2.className='state unknown';
     };
 
     let timer;
