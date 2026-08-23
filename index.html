@@ -58,6 +58,9 @@
       <div class="result">
         <div class="small">判定結果</div>
         <div class="state unknown" id="state">未選択</div>
+        <div style="height:1px;background:var(--line);margin:14px 0"></div>
+        <div class="small">下位RUSH中</div>
+        <div class="state unknown" id="state2">未選択</div>
       </div>
       <button class="clear" id="clear">選択解除</button>
       <div class="count" id="count"></div>
@@ -144,7 +147,9 @@
       "12578":"通常",
       "13567":"通常",
       "23456":"RUSH",
-      "23468":"RUSH",
+      "234
+
+    const SECONDARY = {"126":["失敗"],"13467":["失敗","なし"],"468":["咲け花たち"],"257":["咲け花たち"],"156":["咲け花たち"],"13456":["咲け花たち"],"34567":["なし"],"24578":["なし","失敗"],"167":["失敗"],"238":["なし"],"4568":["なし"],"1238":["失敗"],"14568":["失敗"],"125678":["なし"],"15678":["失敗"],"123468":["成功"]};68":"RUSH",
       "23567":"通常",
       "24567":"僕の英雄",
       "123468":"通常",
@@ -186,7 +191,11 @@
         s==='僕の英雄' ? 'hero' :
         s==='通常' ? 'normal' : 'unknown'
       );
-      document.querySelector('#count').textContent = `マスター ${Object.keys(master).length}種類`;
+      const s2=k?SECONDARY[k]:null;
+      const el2=document.querySelector('#state2');
+      el2.textContent=k?(s2&&s2.length?s2.join(' / '):'未登録'):'未選択';
+      el2.className='state '+(s2&&s2.length?'hero':'unknown');
+      document.querySelector('#count').textContent=`基本マスター ${Object.keys(master).length}種類 / 追加判定 ${Object.keys(SECONDARY).length}セグ`;
     }
 
     document.querySelector('#clear').onclick = ()=>{
