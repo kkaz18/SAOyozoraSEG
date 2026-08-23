@@ -27,7 +27,7 @@
     .picked b{color:#fff;font-size:22px}
     .result{margin-top:18px;text-align:center;border-radius:16px;padding:20px;background:#0d1427;border:1px solid var(--line)}
     .result .state{font-size:30px;font-weight:900}
-    .normal{color:var(--normal)} .rush{color:var(--rush)} .hero{color:var(--hero)} .unknown{color:var(--mut)}
+    .normal{color:var(--normal)} .rush{color:var(--rush)} .hero{color:var(--hero)} .failure{color:#5b8cff} .unknown{color:var(--mut)}
     .clear{width:100%;margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--mut)}
     .count{text-align:center;color:var(--mut);font-size:12px;margin-top:12px}
     .foot{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(9,13,24,.94);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center}
@@ -207,7 +207,11 @@
       const s2=k?SECONDARY[k]:null;
       const el2=document.querySelector('#state2');
       el2.textContent=k?(s2&&s2.length?s2.join(' / '):'未登録'):'未選択';
-      el2.className='state '+(s2&&s2.length?'hero':'unknown');
+      el2.className='state '+(
+        s2&&s2.length
+          ? (s2.includes('失敗') && s2.length===1 ? 'failure' : 'hero')
+          : 'unknown'
+      );
       document.querySelector('#count').textContent=`基本マスター ${Object.keys(master).length}種類 / 追加判定 ${Object.keys(SECONDARY).length}セグ`;
     }
 
